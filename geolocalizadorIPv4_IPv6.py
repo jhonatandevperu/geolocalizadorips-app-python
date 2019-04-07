@@ -1,18 +1,20 @@
-#
+ï»¿#
 # (c) Autor de Proyecto: https://github.com/jhonatanperu
 #
 import json
-import requests #Se requiere instalarlo manualmente a través de pip.
+import requests  # Se requiere instalarlo manualmente a travÃ©s de pip.
 import re
 
-#---------------------------------------------------------------------------
-#Funciones de validación IPv4 e IPv6 obtenidades de: https://bit.ly/2AFVZd9
-#---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Funciones de validaciÃ³n IPv4 e IPv6 obtenidades de: https://bit.ly/2AFVZd9
+# ---------------------------------------------------------------------------
 def is_valid_ip(ip):
     """Validates IP addresses.
     """
     return is_valid_ipv4(ip) or is_valid_ipv6(ip)
-    
+
+
 def is_valid_ipv4(ip):
     """Validates IPv4 addresses.
     """
@@ -52,6 +54,7 @@ def is_valid_ipv4(ip):
     """, re.VERBOSE | re.IGNORECASE)
     return pattern.match(ip) is not None
 
+
 def is_valid_ipv6(ip):
     """Validates IPv6 addresses.
     """
@@ -82,19 +85,25 @@ def is_valid_ipv6(ip):
         $
     """, re.VERBOSE | re.IGNORECASE | re.DOTALL)
     return pattern.match(ip) is not None
-#---------------------------------------------------------------------------
 
-#->Inicio
-api_url_base = 'https://api.ip2country.info/ip?'
 
-def obtenerInformacionIP(ip):
-  api_url = '{0}{1}'.format(api_url_base, ip)
-  headers = {'Content-Type': 'application/json'}
-  response = requests.get(api_url, headers=headers)
-  if response.status_code == 200:
-    return json.loads(response.content.decode('utf-8'))
-  else:
-    return None
+# ---------------------------------------------------------------------------
+
+# ->Inicio
+api1_url_base = 'https://api.ip2country.info/ip?'
+api2_url_base = 'https://api.db-ip.com/v2/free/'
+api3_url_base = 'http://ip-api.com/json/'
+
+
+def obtenerInformacionIP(ip: str, url: str):
+    api_url = '{0}{1}'.format(url, ip)
+    headers = {'Content-Type': 'application/json'}
+    response = requests.get(api_url, headers=headers)
+    if response.status_code == 200:
+        return json.loads(response.content.decode('utf-8'))
+    else:
+        return None
+
 
 menu = """
 +-----------------------------+
@@ -102,15 +111,25 @@ menu = """
 +-----------------------------+
 """
 print(menu)
-ip = (input("Ingrese la dirección IP: ")).lower()
-if(not is_valid_ip(ip)):
-  print("Ingrese una IPv4 o IPv6 válida.")
+ip = (input("Ingrese la direcciÃ³n IP: ")).lower()
+if (not is_valid_ip(ip)):
+    print("Ingrese una IPv4 o IPv6 vÃ¡lida.")
 else:
-  datoJSON = obtenerInformacionIP(ip)
-  if(datoJSON==None):
-    print("No se pudo establecer comunicación con la API, revisar https://ip2country.info/.")
-  else:
-    print('Códigos: {0} - {1}'.format(datoJSON['countryCode'], datoJSON['countryCode3']))  
-    print('Nombre.: {0}'.format(datoJSON['countryName']))
-    print('Emoji..: {0}'.format(datoJSON['countryEmoji']))
-#->Fin
+    datoJSONAPI1 = obtenerInformacionIP(ip, api1_url_base)
+    datoJSONAPI2 = obtenerInformacionIP(ip, api2_url_base)
+    datoJSONAPI3 = obtenerInformacionIP(ip, api3_url_base)
+    if (datoJSONAPI1 == None or datoJSONAPI2 == None or datoJSONAPI3 == None):
+        print('No se pudo establecer comunicaciÃ³n con las APIs')
+    else:
+        print('AS...........: {0}'.format(datoJSONAPI3['as']))
+        print('ISP..........: {0}'.format(datoJSONAPI3['isp']))
+        print('OrganizaciÃ³n.: {0}'.format(datoJSONAPI3['org']))
+        print('Continente...: {0} [{1}]'.format(datoJSONAPI2['continentName'], datoJSONAPI2['continentCode']))
+        print('PaÃ­s.........: {0} [{1}/{2}]'.format(datoJSONAPI1['countryName'], datoJSONAPI1['countryCode'], datoJSONAPI1['countryCode3']))
+        print('RegiÃ³n.......: {0} [{1}]'.format(datoJSONAPI3['regionName'], datoJSONAPI3['region']))
+        print('Ciudad.......: {0}'.format(datoJSONAPI3['city']))
+        print('CÃ³digo Postal: {0}'.format(datoJSONAPI3['zip']))
+        print('Coordenadas..: {0},{1}'.format(datoJSONAPI3['lat'], datoJSONAPI3['lon']))
+        print('Zona Horaria.: {0}'.format(datoJSONAPI3['timezone']))
+        print('Emoji........: {0}'.format(datoJSONAPI1['countryEmoji']))
+# ->Fin
